@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(Nexo3D VERSION 0.2.0 LANGUAGES CXX)
+project(Nexo3D VERSION 0.3.0 LANGUAGES CXX)
 
 option(NEXO_ENABLE_VULKAN "Enable Vulkan loader integration when available" ON)
 option(NEXO_BUILD_TESTS "Build Nexo-3D tests" ON)
@@ -8,9 +8,7 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-add_library(nexo_engine
-    engine/src/vulkan_renderer.cpp
-)
+add_library(nexo_engine engine/src/vulkan_renderer.cpp)
 target_include_directories(nexo_engine PUBLIC engine/include)
 
 if(NEXO_ENABLE_VULKAN)
@@ -18,10 +16,16 @@ if(NEXO_ENABLE_VULKAN)
     if(Vulkan_FOUND)
         target_link_libraries(nexo_engine PRIVATE Vulkan::Vulkan)
         target_compile_definitions(nexo_engine PRIVATE NEXO_HAS_VULKAN=1)
-        message(STATUS "Nexo-3D: Vulkan loader found; enabling instance bootstrap")
+        message(STATUS "Nexo-3D: Vulkan instance bootstrap enabled; GPU draw pipeline remains in progress")
     else()
         message(STATUS "Nexo-3D: Vulkan not found; building renderer fallback")
     endif()
+endif()
+
+if(ANDROID)
+    add_library(nexo_android SHARED engine/src/android_jni.cpp)
+    target_link_libraries(nexo_android PRIVATE android log nexo_engine)
+    target_compile_definitions(nexo_android PRIVATE NEXO_ANDROID_NATIVE_HOST=1)
 endif()
 
 add_executable(nexo3d engine/src/main.cpp)
@@ -35,7 +39,7 @@ else()
     target_compile_options(nexo3d PRIVATE -Wall -Wextra -Wpedantic)
 endif()
 
-if(NEXO_BUILD_TESTS)
+if(NEXO_BUILD_TESTS AND NOT ANDROID)
     enable_testing()
     add_executable(nexo_scene_tests tests/scene_tests.cpp)
     target_link_libraries(nexo_scene_tests PRIVATE nexo_engine)
