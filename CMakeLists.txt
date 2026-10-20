@@ -48,4 +48,8 @@ if(NEXO_BUILD_TESTS AND NOT ANDROID)
     add_executable(nexo_environment_tests tests/environment_tests.cpp)
     target_link_libraries(nexo_environment_tests PRIVATE nexo_engine)
     add_test(NAME nexo_environment_tests COMMAND nexo_environment_tests)
+
+    add_executable(nexo_serialization_tests tests/serialization_tests.cpp)
+    target_link_libraries(nexo_serialization_tests PRIVATE nexo_engine)
+    add_test(NAME nexo_serialization_tests COMMAND nexo_serialization_tests)
 endif()
