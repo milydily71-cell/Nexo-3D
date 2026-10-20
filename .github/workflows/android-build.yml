@@ -15,8 +15,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Install Android NDK
+      - name: Install Android SDK and NDK
         uses: android-actions/setup-android@v3
+        with:
+          ndk-version: 27.2.12479018
       - name: Configure with Android NDK
         run: >-
           cmake -S . -B build-android
