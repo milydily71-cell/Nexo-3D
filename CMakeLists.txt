@@ -1,19 +1,43 @@
 cmake_minimum_required(VERSION 3.20)
-project(Nexo3D VERSION 0.1.0 LANGUAGES CXX)
+project(Nexo3D VERSION 0.2.0 LANGUAGES CXX)
+
+option(NEXO_ENABLE_VULKAN "Enable Vulkan loader integration when available" ON)
+option(NEXO_BUILD_TESTS "Build Nexo-3D tests" ON)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-add_executable(nexo3d
-    engine/src/main.cpp
+add_library(nexo_engine
+    engine/src/vulkan_renderer.cpp
 )
-target_include_directories(nexo3d PRIVATE engine/include)
+target_include_directories(nexo_engine PUBLIC engine/include)
+
+if(NEXO_ENABLE_VULKAN)
+    find_package(Vulkan QUIET)
+    if(Vulkan_FOUND)
+        target_link_libraries(nexo_engine PRIVATE Vulkan::Vulkan)
+        target_compile_definitions(nexo_engine PRIVATE NEXO_HAS_VULKAN=1)
+        message(STATUS "Nexo-3D: Vulkan loader found; enabling instance bootstrap")
+    else()
+        message(STATUS "Nexo-3D: Vulkan not found; building renderer fallback")
+    endif()
+endif()
+
+add_executable(nexo3d engine/src/main.cpp)
+target_link_libraries(nexo3d PRIVATE nexo_engine)
 
 if(MSVC)
+    target_compile_options(nexo_engine PRIVATE /W4 /permissive-)
     target_compile_options(nexo3d PRIVATE /W4 /permissive-)
 else()
+    target_compile_options(nexo_engine PRIVATE -Wall -Wextra -Wpedantic)
     target_compile_options(nexo3d PRIVATE -Wall -Wextra -Wpedantic)
 endif()
 
-enable_testing()
+if(NEXO_BUILD_TESTS)
+    enable_testing()
+    add_executable(nexo_scene_tests tests/scene_tests.cpp)
+    target_link_libraries(nexo_scene_tests PRIVATE nexo_engine)
+    add_test(NAME nexo_scene_tests COMMAND nexo_scene_tests)
+endif()
