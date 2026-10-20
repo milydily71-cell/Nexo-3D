@@ -1,59 +1,72 @@
 # Nexo-3D
 
-**A mobile-first 3D game engine and editor** — an ambitious open-source project inspired by Unreal Engine workflows, built incrementally around C++, Vulkan, and C# scripting.
+**A mobile-first 3D game engine and editor** inspired by Unreal Engine workflows, built incrementally around C++, Vulkan, and C# gameplay scripting.
 
-> Status: early scaffold. This repository is not yet a production-ready UE5 replacement. Features below are target roadmap items, not claims of completed functionality.
+> Status: early development scaffold. This is not a production-ready UE5 replacement. Features listed as roadmap items are not yet implemented.
 
-## Vision
-- **C++ runtime:** modular engine core, scene graph, entity/component system, resource and asset management.
-- **Rendering:** Vulkan-first renderer with mobile-friendly fallback strategy, PBR materials, shadows, HDR/tonemapping, post-processing, and scalable quality presets.
-- **Mobile editor:** touch-friendly scene hierarchy, inspector, asset browser, viewport controls, and script editor; start as a responsive web prototype, then connect native tooling.
-- **C# scripting:** managed gameplay scripts, engine API bindings, and examples.
-- **GLB/glTF assets:** import 3D models and animations.
-- **GitHub workflows:** automated checks and builds, with artifacts published only after CI succeeds.
+## Current foundation
+- C++20 native engine executable.
+- Scene model with entity IDs, names, transforms, lookup, and basic tests.
+- Optional Vulkan loader integration and Vulkan instance bootstrap when the SDK/loader is available.
+- Initial C# gameplay API project (Nexo3D.Api) and a compiling sample script project.
+- Responsive mobile editor prototype at editor/index.html.
+- GitHub Actions CI for C++ build/tests and C# compilation, plus an Android NDK cross-compile workflow.
 
-## Planned feature groups (50+ target)
-1. **Core:** application lifecycle, logging, settings, event bus, job system, memory utilities, profiling.
-2. **World:** scenes, entities, components, transforms, hierarchy, prefabs, serialization, undo/redo.
-3. **Rendering:** Vulkan device, swapchain, render graph, meshes, PBR, materials, textures, lighting, shadows, sky, fog, particles, instancing, culling, LOD, MSAA, HDR, tone mapping, bloom, SSAO, anti-aliasing, debug views, render scaling, quality presets.
-4. **Assets:** glTF/GLB, textures, animation clips, skeletons, import settings, asset database, thumbnails, hot reload.
-5. **Gameplay:** cameras, input mapping, physics integration, collision, audio, animation state machines, navigation, UI, localization, save/load, networking hooks.
-6. **Editor:** mobile-first layout, viewport, hierarchy, inspector, asset browser, script editor, console, gizmos, play/stop, project settings, templates, build/export panel, touch gestures, keyboard shortcuts, autosave, undo/redo.
-7. **C# tooling:** script API, compiler/runtime integration, diagnostics, examples, reload pipeline.
-8. **Build/release:** CMake, tests, Android NDK build, GitHub Actions, artifact packaging, versioned releases, crash diagnostics hooks.
+## Build locally
 
-## Repository layout
-```text
-Nexo-3D/
-├── .github/workflows/ci.yml
-├── editor/                 # Responsive mobile editor prototype
-├── engine/                 # C++ runtime and renderer
-├── scripting/              # C# gameplay API examples and design
-├── tests/
-├── CMakeLists.txt
-└── README.md
-```
-
-## Build the C++ starter
-Requires CMake 3.20+ and a C++20 compiler.
+C++20 compiler and CMake 3.20+:
 
 ```bash
 cmake -S . -B build
 cmake --build build --config Release
+ctest --test-dir build --output-on-failure
 ./build/nexo3d
 ```
 
-The initial CI target is intentionally dependency-light. Vulkan/Android SDK integration will be added in dedicated, testable steps.
+Vulkan integration is optional. If Vulkan development files are installed, CMake enables the Vulkan instance bootstrap. Without them, the engine still builds, but the renderer is unavailable.
+
+C# API and sample (requires .NET 8 SDK):
+
+```bash
+dotnet build scripting/Nexo3D.Api/Nexo3D.Api.csproj
+dotnet build scripting/Samples/Samples.csproj
+```
+
+Android NDK cross-build (requires Android NDK):
+
+```bash
+cmake -S . -B build-android \\
+  -DCMAKE_TOOLCHAIN_FILE="$ANDROID_NDK_HOME/build/cmake/android.toolchain.cmake" \\
+  -DANDROID_ABI=arm64-v8a \\
+  -DANDROID_PLATFORM=android-26 \\
+  -DNEXO_ENABLE_VULKAN=OFF
+cmake --build build-android --parallel 2
+```
+
+## Repository map
+
+- .github/workflows/ci.yml: C++ tests and C# build checks.
+- .github/workflows/android-build.yml: Android arm64 native cross-build.
+- engine/include/nexo/scene.hpp: initial scene/entity/transform model.
+- engine/include/nexo/vulkan_renderer.hpp and engine/src/vulkan_renderer.cpp: Vulkan bootstrap interface and implementation.
+- editor/index.html: touch-friendly editor UI prototype (viewport is not a real 3D renderer yet).
+- scripting/Nexo3D.Api: initial C# API types.
+- scripting/Samples: example gameplay script.
 
 ## Roadmap
-- [x] Repository scaffold and CI baseline
-- [x] Mobile editor UI prototype
-- [x] C++20 engine-core entry point
-- [ ] Scene graph and entity/component model
-- [ ] Vulkan renderer and Android surface
-- [ ] GLB importer and asset pipeline
-- [ ] C# runtime integration and sample scripts
-- [ ] Android editor packaging and playable sample project
 
-## Design principles
-Mobile-first, modular, measurable performance, explicit feature status, open formats, reproducible builds, and no secrets committed to the repository.
+1. **Native foundation:** scene graph, resource handles, input/events, logging, profiling.
+2. **Android Vulkan renderer:** Android surface and swapchain, physical-device selection, command buffers, shaders, mesh draw path.
+3. **Assets:** GLB/glTF import, textures, materials, animation.
+4. **C# runtime:** choose and integrate a supported managed runtime, native interop, script lifecycle, diagnostics.
+5. **Editor:** connect hierarchy/inspector to a real scene model, then render an interactive 3D viewport.
+6. **Graphics:** PBR, shadow maps, HDR, tone mapping, bloom, SSAO, anti-aliasing, LOD and scalable mobile presets.
+7. **Production:** Android packaging, project export, reproducible CI artifacts, crash diagnostics.
+
+## Target design
+
+- Android phones and tablets first.
+- C++20 runtime; Vulkan as the intended native rendering backend.
+- C# gameplay scripting with a custom Nexo API.
+- 50+ planned engine features delivered in tested increments.
+- Explicit feature status, open formats, reproducible builds, and no secrets committed to source control.
