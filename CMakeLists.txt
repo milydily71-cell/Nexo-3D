@@ -44,4 +44,8 @@ if(NEXO_BUILD_TESTS AND NOT ANDROID)
     add_executable(nexo_scene_tests tests/scene_tests.cpp)
     target_link_libraries(nexo_scene_tests PRIVATE nexo_engine)
     add_test(NAME nexo_scene_tests COMMAND nexo_scene_tests)
+
+    add_executable(nexo_environment_tests tests/environment_tests.cpp)
+    target_link_libraries(nexo_environment_tests PRIVATE nexo_engine)
+    add_test(NAME nexo_environment_tests COMMAND nexo_environment_tests)
 endif()
