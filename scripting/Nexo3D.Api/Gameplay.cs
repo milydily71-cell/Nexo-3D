@@ -1,7 +1,9 @@
 namespace Nexo3D;
 
 [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field)]
-public sealed class ExportAttribute : Attribute;
+public sealed class ExportAttribute : Attribute
+{
+}
 
 public readonly record struct Vector3(float X, float Y, float Z)
 {
