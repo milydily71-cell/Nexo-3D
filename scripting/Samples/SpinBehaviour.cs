@@ -1,17 +1,14 @@
 using Nexo3D;
 
+namespace Nexo3D.Samples;
+
 public sealed class SpinBehaviour : Behaviour
 {
-    [Export]
-    public float DegreesPerSecond { get; set; } = 45f;
+    [Export(DisplayName = "Degrees per second", Category = "Motion")]
+    public float DegreesPerSecond { get; set; } = 90f;
 
     public override void Update(float deltaTime)
     {
-        // Example API usage. Native Transform.Rotate is not wired up yet.
-        var step = DegreesPerSecond * deltaTime;
-        Transform.RotationDegrees = new Vector3(
-            Transform.RotationDegrees.X,
-            Transform.RotationDegrees.Y + step,
-            Transform.RotationDegrees.Z);
+        Transform.Rotate(Vector3.Up, DegreesPerSecond * deltaTime);
     }
 }
