@@ -11,16 +11,30 @@ permissions:
 
 jobs:
   build-cpp:
-    name: C++20 configure and build
+    name: C++20 build and tests
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Install build tools
-        run: sudo apt-get update && sudo apt-get install -y cmake ninja-build g++
+      - uses: actions/checkout@v4
+      - name: Install build tools and Vulkan headers
+        run: sudo apt-get update && sudo apt-get install -y cmake ninja-build g++ libvulkan-dev mesa-vulkan-drivers
       - name: Configure
         run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
       - name: Build
         run: cmake --build build --parallel 2
-      - name: Smoke test
+      - name: Test
+        run: ctest --test-dir build --output-on-failure
+      - name: Engine smoke test
         run: ./build/nexo3d
+
+  build-csharp:
+    name: C# API and sample compile
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+      - name: Build API
+        run: dotnet build scripting/Nexo3D.Api/Nexo3D.Api.csproj --configuration Release
+      - name: Build sample
+        run: dotnet build scripting/Samples/Samples.csproj --configuration Release
